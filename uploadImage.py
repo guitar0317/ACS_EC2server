@@ -11,7 +11,7 @@ import base64
 import io
 import os
 from PIL import Image
-#123
+#123sss
 #test_img_folder = "D:/Fish/Fish_counting/fish_counting_system/非洲王子_25_30mm/"
 def uploadImageFun():
 
