@@ -13,7 +13,6 @@ import numpy
 import cv2
 from PIL import Image
 
-#IPtest
 #ip = "ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com"  #IP address of Amazon EC2
 ip = "localhost" #IP for test
 
