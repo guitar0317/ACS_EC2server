@@ -1,5 +1,6 @@
 from distutils.log import debug
 from http import client
+import io
 from flask import Flask, request, Response
 from flask import jsonify
 import requests
@@ -9,9 +10,7 @@ from os import listdir
 from os.path import isfile, isdir, join
 import datetime
 import base64
-import io
 import numpy
-import cv2
 from PIL import Image
 import json
 import requests.packages.urllib3
@@ -81,40 +80,39 @@ def PostImage_amount_couting():
         # print("device_name:"+str(device_name))
         # print("date:"+str(date))
         S3path= company_name+'/'+device_name+'/'+date+'/original/'
-        requests.packages.urllib3.disable_warnings()
-        a ={
-             "key1": "value1",
-         }
-        Lambda_client = boto3.client('lambda',region_name='ap-southeast-1',verify=False ,aws_access_key_id = access_key, aws_secret_access_key = access_secret)
-        response = Lambda_client.invoke(
-             FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:CallTest',
-             #FunctionName='CallTest',
-             #InvocationType='Event',
-             InvocationType='RequestResponse',
-             LogType='None',
-             #ClientContext='None',
-             #Payload= base64.b64encode(json.dumps(a).encode("utf-8"))
-             Payload = json.dumps(a)
-             )
-        print(str(response["StatusCode"]))
-        print(json.load(response["Payload"])["result"])
-        #print("S3 Path="+S3path)
+        requests.packages.urllib3.disable_warnings() #避免SSL驗證 
         # for index,im_b64 in enumerate(img_list):
-        #      im_binary = base64.b64decode(im_b64)    
-        #      buf = io.BytesIO(im_binary)
-        #      # pilImg = Image.open(buf)
-        #      # #pilImg.show()
-        #      # numpyImg = numpy.asarray(pilImg)
-        #      # img = cv2.cvtColor(numpyImg,cv2.COLOR_RGB2BGR) 
-        #      # cv2.imshow("A",img)
-        #      # cv2.waitKey(0)
-        #      #cv2.imwrite(str(index)+".png",img)
-        #      Upload_file(S3path, buf, S3path+str(index))
- 
-        # if Upload_file(S3path):
-        #     print("Susscess")
-        # else:
-        #     print("Fail")
+        #       im_binary = base64.b64decode(im_b64)    
+        #       buf = io.BytesIO(im_binary)
+        # #      # pilImg = Image.open(buf)
+        # #      # #pilImg.show()
+        # #      # numpyImg = numpy.asarray(pilImg)
+        # #      # img = cv2.cvtColor(numpyImg,cv2.COLOR_RGB2BGR) 
+        # #      # cv2.imshow("A",img)
+        # #      # cv2.waitKey(0)
+        # #      #cv2.imwrite(str(index)+".png",img)
+        #       Upload_file(S3path, buf, S3path+str(index))
+        print("Images were uploaded to "+ bucket_name+'/'+S3path)
+       
+        lambda_parameter ={
+             "bw_shift": bw_shift,
+             "pix2mm_ratio":pix2mm_ratio,
+             "count_shift": count_shift,
+             "frame_num": frame_num,
+             "company_name":company_name,
+             "device_name":device_name,
+             "date":date,
+             "img_path": S3path
+         }
+        lambda_flag, response = Lambda_Invoke(lambda_parameter)
+        if lambda_flag:
+            print("Counting was finished. StatusCode="+str(response["StatusCode"]))
+            # #print(str(response["StatusCode"]))
+            print(json.load(response["Payload"])["result"])
+        else:
+            print("Call lmabda fail.")
+            print(response["message"])
+        
         # result = {
         # "sussce" :True,
         # "message": "Success"
@@ -154,40 +152,49 @@ def Create_S3_bucket():
         bucketName = bucket["Name"]
         print(bucketName)
 
-#Uploading file to bucket   
-# filepath='D:/Python_EX/image/'
+#Uploading file to bucket  
 def Upload_file(S3path, image, index):
     try:
+        s3_client = boto3.client('s3', verify=False ,aws_access_key_id = access_key, aws_secret_access_key = access_secret)
+        s3_client.upload_fileobj(image, bucket_name,index+'.png',ExtraArgs={'ACL': 'public-read'})
         # img = Image.fromarray(image)
         # buffer = io.BytesIO()
         # img.save(buffer, format="PNG")
-        # hex_data = buffer.getvalue()
-        s3_client = boto3.client('s3', verify=False ,aws_access_key_id = access_key, aws_secret_access_key = access_secret)
+        # hex_data = buffer.getvalue()     
         #s3_client.put_object(Bucket=bucket_name, Key=index+'.png', Body=hex_data,  ACL="public-read")
-        s3_client.upload_fileobj(image, bucket_name,index+'.png',ExtraArgs={'ACL': 'public-read'})
-        #image = os.path.basename(filepath)
-        #image = listdir(filepath)
-        #print(image)
-        #using object method
-        # for i in image:
-        #     filename = filepath+i
-        #     with open(filename,mode="rb") as file: 
-        #         s3_client.upload_fileobj(file, bucket_name, S3path+i,ExtraArgs={'ACL': 'public-read'})
-        # print(file)
-        #using filename method
-        # for i in range(0,len(image),1):
-        #     print(join(filepath+image[i]))
-        #     s3_client.upload_file(filepath+image[i], bucket_name, S3path+image[i],ExtraArgs={'ACL': 'public-read'})
         return True
     except ClientError as e:
         print(e)
         return False
     return True
 
+def Lambda_Invoke(parameter):
+    try:
+        Lambda_client = boto3.client('lambda',region_name='ap-southeast-1',verify=False ,aws_access_key_id = access_key, aws_secret_access_key = access_secret)
+        response = Lambda_client.invoke( #call lambda function
+            FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:CallTest',
+                #FunctionName='CallTest',
+                #InvocationType='Event',
+            InvocationType='RequestResponse',
+            LogType='None',
+                #ClientContext='None',
+                #Payload= base64.b64encode(json.dumps(a).encode("utf-8"))
+            Payload = json.dumps(parameter)
+        )
+        return True, response
+    except Exception as e:
+        print(e)
+        result = {
+        "sussce" :False,
+        "message": e
+        }
+        return False, jsonify(result)
+
+
 #Program main(entry)
 if __name__ == '__main__':
-    print('Flask start')
-    print('flask ip address=' + ip)
+    print("WebServer start...")
+    print('WebServer ip address = ' + ip)
     flaskobj.run(ip, debug=True, port=5000, use_reloader=False)
     #date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     # S3path= company_name+'/'+device_name+'/'+date+'/original/'
