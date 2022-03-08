@@ -91,10 +91,11 @@ def PostImage_amount_couting():
         response = Lambda_client.invoke(
              FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:CallTest',
              #FunctionName='CallTest',
-             InvocationType='Event',
+            #  InvocationType='Event',
+             InvocationType='RequestResponse',
              LogType='None',
              ClientContext='None',
-             Payload= json.dumps(a)
+             Payload= base64.b64encode(json.dumps(a))
              )
         print(response)
         #print("S3 Path="+S3path)
