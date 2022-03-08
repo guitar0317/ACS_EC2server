@@ -84,20 +84,20 @@ def PostImage_amount_couting():
         requests.packages.urllib3.disable_warnings()
         a ={
              "key1": "value1",
-             "key2": "value2",
-             "key3": "value3"
          }
         Lambda_client = boto3.client('lambda',region_name='ap-southeast-1',verify=False ,aws_access_key_id = access_key, aws_secret_access_key = access_secret)
         response = Lambda_client.invoke(
              FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:CallTest',
              #FunctionName='CallTest',
-            #  InvocationType='Event',
+             #InvocationType='Event',
              InvocationType='RequestResponse',
              LogType='None',
-             ClientContext='None',
-             Payload= base64.b64encode(json.dumps(a))
+             #ClientContext='None',
+             #Payload= base64.b64encode(json.dumps(a).encode("utf-8"))
+             Payload = json.dumps(a)
              )
-        print(response)
+        print(str(response["StatusCode"]))
+        print(json.load(response["Payload"])["result"])
         #print("S3 Path="+S3path)
         # for index,im_b64 in enumerate(img_list):
         #      im_binary = base64.b64decode(im_b64)    

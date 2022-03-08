@@ -33,7 +33,7 @@ def uploadImageFun():
         #test_images = Path(test_img_folder).glob('*.*')
     #files = glob.glob(r"D:\Fish\Fish_counting\fish_counting_system\Africa_25_30mm\*.png",recursive=False)
     #files = glob.glob(r"D:\Fish\Fish_counting\fish_counting_system\Africa_25_30mm\*.png",recursive=False)
-    files = glob.glob(r"D:\Python_EX\image\*.png",recursive=False)
+    files = glob.glob(r"C:\ACS\ACS_EC2server\image\*.png",recursive=False)
     img_b64_list = []
     #param
     bw_shift = 0.0
