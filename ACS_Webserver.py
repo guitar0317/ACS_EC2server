@@ -1,4 +1,5 @@
 from distutils.log import debug
+from http import client
 from flask import Flask, request, Response
 from flask import jsonify
 import requests
@@ -12,8 +13,9 @@ import io
 import numpy
 import cv2
 from PIL import Image
+import json
+import requests.packages.urllib3
 
-#AAAAAA
 #ip = "ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com"  #IP address of Amazon EC2
 ip = "localhost" #IP for test
 
@@ -59,6 +61,7 @@ def helloTest():
 # 5. result_img:結果影像URL
 # 6. compute_time:辨識運行時間(請加在UI，單位是秒sec)
 Image_List = []
+Lambda_client = None
 @flaskobj.route("/PostImage", methods=["POST"]) #Post method...is main 
 def PostImage_amount_couting():
     try:
@@ -78,18 +81,34 @@ def PostImage_amount_couting():
         # print("device_name:"+str(device_name))
         # print("date:"+str(date))
         S3path= company_name+'/'+device_name+'/'+date+'/original/'
-        # print("S3 Path="+S3path)
-        for index,im_b64 in enumerate(img_list):
-            im_binary = base64.b64decode(im_b64)    
-            buf = io.BytesIO(im_binary)
-            # pilImg = Image.open(buf)
-            # #pilImg.show()
-            # numpyImg = numpy.asarray(pilImg)
-            # img = cv2.cvtColor(numpyImg,cv2.COLOR_RGB2BGR) 
-            # cv2.imshow("A",img)
-            # cv2.waitKey(0)
-            #cv2.imwrite(str(index)+".png",img)
-            Upload_file(S3path, buf, S3path+str(index))
+        requests.packages.urllib3.disable_warnings()
+        a ={
+             "key1": "value1",
+             "key2": "value2",
+             "key3": "value3"
+         }
+        Lambda_client = boto3.client('lambda',region_name='ap-southeast-1',verify=False ,aws_access_key_id = access_key, aws_secret_access_key = access_secret)
+        response = Lambda_client.invoke(
+             FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:CallTest',
+             #FunctionName='CallTest',
+             InvocationType='Event',
+             LogType='None',
+             ClientContext='None',
+             Payload= json.dumps(a)
+             )
+        print(response)
+        #print("S3 Path="+S3path)
+        # for index,im_b64 in enumerate(img_list):
+        #      im_binary = base64.b64decode(im_b64)    
+        #      buf = io.BytesIO(im_binary)
+        #      # pilImg = Image.open(buf)
+        #      # #pilImg.show()
+        #      # numpyImg = numpy.asarray(pilImg)
+        #      # img = cv2.cvtColor(numpyImg,cv2.COLOR_RGB2BGR) 
+        #      # cv2.imshow("A",img)
+        #      # cv2.waitKey(0)
+        #      #cv2.imwrite(str(index)+".png",img)
+        #      Upload_file(S3path, buf, S3path+str(index))
  
         # if Upload_file(S3path):
         #     print("Susscess")

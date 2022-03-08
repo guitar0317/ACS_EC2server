@@ -16,8 +16,8 @@ from PIL import Image
 def uploadImageFun():
 
     #addr = 'http://192.168.68.122:5000'
-    #addr = 'http://localhost:5000'
-    addr = 'http://ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com:5000'
+    addr = 'http://localhost:5000'
+    #addr = 'http://ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com:5000'
     test_url = addr + '/PostImage'
 
     # prepare headers for http request
@@ -40,9 +40,9 @@ def uploadImageFun():
     pix2mm_ratio = 0.8
     count_shift = 5
     frame_num = 10
-    company_name="ITRI112454"
-    devicename="DV4441"
-    date="20220304162711"
+    company_name="ITRItest"
+    devicename="DV1"
+    date="20220308162711"
     for file in files:
         #print(str(Path(file)))
         fileName = os.path.basename(file)
