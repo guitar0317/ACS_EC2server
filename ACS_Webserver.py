@@ -15,8 +15,8 @@ from PIL import Image
 import json
 import requests.packages.urllib3
 
-#ip = "ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com"  #IP address of Amazon EC2
-ip = "localhost" #IP for test
+ip = "ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com"  #IP address of Amazon EC2
+#ip = "localhost" #IP for test
 
 #Access permission of IAM roel 
 access_key = 'AKIAS2OTXTXV32WRBZ4P'
@@ -73,27 +73,30 @@ def PostImage_amount_couting():
         device_name=payload["device_name"][0]
         date=payload["date"][0]
         img_list = payload['img_list']  #Image
+        S3path= company_name+'/'+device_name+'/'+date+'/original/'
+        requests.packages.urllib3.disable_warnings() #避免SSL驗證 
         # print("bw_shift:"+str(bw_shift))
         # print("count_shift:"+str(count_shift))
         # print("frame_num:"+str(frame_num))
         # print("company_name:"+str(company_name))
         # print("device_name:"+str(device_name))
         # print("date:"+str(date))
-        S3path= company_name+'/'+device_name+'/'+date+'/original/'
-        requests.packages.urllib3.disable_warnings() #避免SSL驗證 
-        # for index,im_b64 in enumerate(img_list):
-        #       im_binary = base64.b64decode(im_b64)    
-        #       buf = io.BytesIO(im_binary)
-        # #      # pilImg = Image.open(buf)
-        # #      # #pilImg.show()
-        # #      # numpyImg = numpy.asarray(pilImg)
-        # #      # img = cv2.cvtColor(numpyImg,cv2.COLOR_RGB2BGR) 
-        # #      # cv2.imshow("A",img)
-        # #      # cv2.waitKey(0)
-        # #      #cv2.imwrite(str(index)+".png",img)
-        #       Upload_file(S3path, buf, S3path+str(index))
+        
+        #逐一將影像上傳至S3
+        for index,im_b64 in enumerate(img_list):
+              im_binary = base64.b64decode(im_b64)    
+              buf = io.BytesIO(im_binary)
+        #      # pilImg = Image.open(buf)
+        #      # #pilImg.show()
+        #      # numpyImg = numpy.asarray(pilImg)
+        #      # img = cv2.cvtColor(numpyImg,cv2.COLOR_RGB2BGR) 
+        #      # cv2.imshow("A",img)
+        #      # cv2.waitKey(0)
+        #      #cv2.imwrite(str(index)+".png",img)
+              Upload_file(S3path, buf, S3path+str(index))
         print("Images were uploaded to "+ bucket_name+'/'+S3path)
        
+        #Call lambda(fish counting)
         lambda_parameter ={
              "bw_shift": bw_shift,
              "pix2mm_ratio":pix2mm_ratio,
@@ -108,23 +111,25 @@ def PostImage_amount_couting():
         if lambda_flag:
             print("Counting was finished. StatusCode="+str(response["StatusCode"]))
             # #print(str(response["StatusCode"]))
-            print(json.load(response["Payload"])["result"])
+            temp = json.load(response["Payload"])
+            #print(temp["result"])
+            result = {
+                "sussce" :True,
+                "message": "Success",
+                "count_result":temp["count_result"],
+                "avg_lengt":temp["avg_lengt"],
+                "result_img":temp["result_img"],
+                "compute_time":temp["compute_time"]
+            }    
+            #return jsonify(result)
         else:
             print("Call lmabda fail.")
             print(response["message"])
+            result = {
+                "sussce" :False,
+                "message": response["message"]
+            }   
         
-        # result = {
-        # "sussce" :True,
-        # "message": "Success"
-        # "count_result"
-        # "avg_lengt"
-        # "result_img"
-        # "compute_time":
-        # }    
-        result = {
-        "sussce" :True,
-        "message": "Sucess"
-        }   
         return jsonify(result)
     except Exception as e:
         print(e)
@@ -172,6 +177,7 @@ def Lambda_Invoke(parameter):
     try:
         Lambda_client = boto3.client('lambda',region_name='ap-southeast-1',verify=False ,aws_access_key_id = access_key, aws_secret_access_key = access_secret)
         response = Lambda_client.invoke( #call lambda function
+            #FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:FishCounting',
             FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:CallTest',
                 #FunctionName='CallTest',
                 #InvocationType='Event',

@@ -16,8 +16,8 @@ from PIL import Image
 def uploadImageFun():
 
     #addr = 'http://192.168.68.122:5000'
-    addr = 'http://localhost:5000'
-    #addr = 'http://ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com:5000'
+    #addr = 'http://localhost:5000'
+    addr = 'http://ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com:5000'
     test_url = addr + '/PostImage'
 
     # prepare headers for http request
@@ -33,16 +33,16 @@ def uploadImageFun():
         #test_images = Path(test_img_folder).glob('*.*')
     #files = glob.glob(r"D:\Fish\Fish_counting\fish_counting_system\Africa_25_30mm\*.png",recursive=False)
     #files = glob.glob(r"D:\Fish\Fish_counting\fish_counting_system\Africa_25_30mm\*.png",recursive=False)
-    files = glob.glob(r"C:\ACS\ACS_EC2server\image\*.png",recursive=False)
+    files = glob.glob(r"D:\Project\FY110\菖葳_農業科專_觀賞水族活體貿易之數位營運平臺建置\AWS\EC2\EC2_Webserver\ACS_EC2server\image\*.png",recursive=False)
     img_b64_list = []
     #param
     bw_shift = 0.0
     pix2mm_ratio = 0.8
     count_shift = 5
     frame_num = 10
-    company_name="ITRItest"
-    devicename="DV1"
-    date="20220308162711"
+    company_name="ITRI2"
+    devicename="D2"
+    date="20220323142001"
     for file in files:
         #print(str(Path(file)))
         fileName = os.path.basename(file)
