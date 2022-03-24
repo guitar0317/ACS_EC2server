@@ -40,9 +40,9 @@ def uploadImageFun():
     pix2mm_ratio = 0.8
     count_shift = 5
     frame_num = 10
-    company_name="ITRI2"
-    devicename="D2"
-    date="20220323142001"
+    company_name="ITRI5"
+    devicename="D1"
+    date="202203241440"
     for file in files:
         #print(str(Path(file)))
         fileName = os.path.basename(file)

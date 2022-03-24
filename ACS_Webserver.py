@@ -117,7 +117,7 @@ def PostImage_amount_couting():
                 "sussce" :True,
                 "message": "Success",
                 "count_result":temp["count_result"],
-                "avg_lengt":temp["avg_lengt"],
+                "avg_length":temp["avg_length"],
                 "result_img":temp["result_img"],
                 "compute_time":temp["compute_time"]
             }    
@@ -177,8 +177,8 @@ def Lambda_Invoke(parameter):
     try:
         Lambda_client = boto3.client('lambda',region_name='ap-southeast-1',verify=False ,aws_access_key_id = access_key, aws_secret_access_key = access_secret)
         response = Lambda_client.invoke( #call lambda function
-            #FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:FishCounting',
-            FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:CallTest',
+            FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:FishCounting',
+            #FunctionName='arn:aws:lambda:ap-southeast-1:194254446059:function:CallTest',
                 #FunctionName='CallTest',
                 #InvocationType='Event',
             InvocationType='RequestResponse',
