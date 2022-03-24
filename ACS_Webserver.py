@@ -73,7 +73,7 @@ def PostImage_amount_couting():
         device_name=payload["device_name"][0]
         date=payload["date"][0]
         img_list = payload['img_list']  #Image
-        S3path= company_name+'/'+device_name+'/'+date+'/original/'
+        S3path= company_name+'/'+device_name+'/'+date#+'/original/'
         requests.packages.urllib3.disable_warnings() #避免SSL驗證 
         # print("bw_shift:"+str(bw_shift))
         # print("count_shift:"+str(count_shift))
@@ -93,7 +93,7 @@ def PostImage_amount_couting():
         #      # cv2.imshow("A",img)
         #      # cv2.waitKey(0)
         #      #cv2.imwrite(str(index)+".png",img)
-              Upload_file(S3path, buf, S3path+str(index))
+              Upload_file(S3path+'/original/', buf, S3path+'/original/'+str(index))
         print("Images were uploaded to "+ bucket_name+'/'+S3path)
        
         #Call lambda(fish counting)
@@ -102,9 +102,10 @@ def PostImage_amount_couting():
              "pix2mm_ratio":pix2mm_ratio,
              "count_shift": count_shift,
              "frame_num": frame_num,
-             "company_name":company_name,
-             "device_name":device_name,
-             "date":date,
+            #  "company_name":company_name,
+            #  "device_name":device_name,
+            #  "date":date,
+             "bucket_name":bucket_name,
              "img_path": S3path
          }
         lambda_flag, response = Lambda_Invoke(lambda_parameter)
