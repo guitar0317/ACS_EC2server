@@ -41,8 +41,8 @@ def uploadImageFun():
     count_shift = 5
     frame_num = 10
     company_name="ITRI"
-    devicename="D1"
-    date="202203241609"
+    devicename="D4"
+    date="202203281607"
     for file in files:
         #print(str(Path(file)))
         fileName = os.path.basename(file)
