@@ -95,7 +95,7 @@ def PostImage_amount_couting():
         #      #cv2.imwrite(str(index)+".png",img)
               Upload_file(S3path+'/original/', buf, S3path+'/original/'+str(index))
         print("Images were uploaded to "+ bucket_name+'/'+S3path)
-       
+        S3path = 's3://'+bucket_name+'/'+S3path
         #Call lambda(fish counting)
         lambda_parameter ={
              "bw_shift": bw_shift,
@@ -113,16 +113,21 @@ def PostImage_amount_couting():
             print("Counting was finished. StatusCode="+str(response["StatusCode"]))
             # #print(str(response["StatusCode"]))
             temp = json.load(response["Payload"])
-            #print(temp["result"])
-            result = {
-                "sussce" :True,
-                "message": "Success",
-                "count_result":temp["count_result"],
-                "avg_length":temp["avg_length"],
-                "result_img":temp["result_img"],
-                "compute_time":temp["compute_time"]
-            }    
-            #return jsonify(result)
+            if temp["success"] == False:
+                print(temp["message"])
+                result = {
+                    "success" :False,
+                    "message": temp["message"],
+                } 
+            else:   
+                result = {
+                    "success" :True,
+                    "message": "Success",
+                    "count_result":temp["count_result"],
+                    "avg_length":temp["avg_length"],
+                    "result_img":temp["result_img"],
+                    "compute_time":temp["compute_time"]
+                } 
         else:
             print("Call lmabda fail.")
             print(response["message"])
