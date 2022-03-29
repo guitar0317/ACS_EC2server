@@ -64,6 +64,7 @@ Lambda_client = None
 @flaskobj.route("/PostImage", methods=["POST"]) #Post method...is main 
 def PostImage_amount_couting():
     try:
+        print('Post Image start...')
         payload = request.form.to_dict(flat=False)
         bw_shift = payload["bw_shift"][0]
         pix2mm_ratio = payload['pix2mm_ratio'][0]
@@ -74,6 +75,7 @@ def PostImage_amount_couting():
         date=payload["date"][0]
         img_list = payload['img_list']  #Image
         S3path= company_name+'/'+device_name+'/'+date#+'/original/'
+        print('Parameters are received...')
         requests.packages.urllib3.disable_warnings() #避免SSL驗證 
         # print("bw_shift:"+str(bw_shift))
         # print("count_shift:"+str(count_shift))
@@ -83,6 +85,7 @@ def PostImage_amount_couting():
         # print("date:"+str(date))
         
         #逐一將影像上傳至S3
+        print('image upload start...')
         for index,im_b64 in enumerate(img_list):
               im_binary = base64.b64decode(im_b64)    
               buf = io.BytesIO(im_binary)
@@ -94,7 +97,8 @@ def PostImage_amount_couting():
         #      # cv2.waitKey(0)
         #      #cv2.imwrite(str(index)+".png",img)
               Upload_file(S3path+'/original/', buf, S3path+'/original/'+str(index))
-        print("Images were uploaded to "+ bucket_name+'/'+S3path)
+              print('Uploading the '+str(index)+" image.")
+        print("Images were uploaded to "+ bucket_name+'/'+S3path + "finish...")
         S3path = 's3://'+bucket_name+'/'+S3path
         #Call lambda(fish counting)
         lambda_parameter ={
@@ -108,9 +112,11 @@ def PostImage_amount_couting():
              "bucket_name":bucket_name,
              "img_path": S3path
          }
+        print('Lambda start...')
         lambda_flag, response = Lambda_Invoke(lambda_parameter)
+        print('Lambda end...')
         if lambda_flag:
-            print("Counting was finished. StatusCode="+str(response["StatusCode"]))
+            #print("Counting was finished. StatusCode="+str(response["StatusCode"]))
             # #print(str(response["StatusCode"]))
             temp = json.load(response["Payload"])
             if temp["success"] == False:
@@ -127,10 +133,10 @@ def PostImage_amount_couting():
                     "avg_length":temp["avg_length"],
                     "result_img":temp["result_img"],
                     "compute_time":temp["compute_time"]
-                } 
+                }
+            print('Return data:'+ str(result)) 
         else:
-            print("Call lmabda fail.")
-            print(response["message"])
+            print("Lmabda fail. "+ response["message"])
             result = {
                 "sussce" :False,
                 "message": response["message"]
