@@ -21,7 +21,7 @@ ip = "ec2-54-254-127-237.ap-southeast-1.compute.amazonaws.com"  #IP address of A
 #Access permission of IAM roel 
 access_key = 'AKIAS2OTXTXV32WRBZ4P'
 access_secret = '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'
-
+#QQ
 #relevant parameters of counting algorithm
 bw_shift=0.0
 pix2mm_ratio=0.0
